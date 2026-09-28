@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AddToCartClient } from "@/components/products/AddToCartClient";
 import { StarRating } from "@/components/ui/StarRating";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency, timeAgo } from "@/lib/utils";
 import { MapPin, Package, Sprout, Clock } from "lucide-react";
 
@@ -46,9 +46,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="mt-4 grid gap-10 lg:grid-cols-2">
             <div>
               <div className="relative aspect-square overflow-hidden rounded-3xl border border-cream-200 bg-white shadow-soft">
-                <Image
-                  src={product.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80"}
-                  alt={product.name} fill className="object-cover" priority
+                <SafeImage
+                  src={product.imageUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                  fallbackEmoji={product.category.icon || "🌿"}
+                  fallbackLabel={product.name}
                 />
               </div>
             </div>

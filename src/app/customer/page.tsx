@@ -1,10 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, timeAgo } from "@/lib/utils";
-import { PackageCheck, ShoppingBasket, Heart, MapPin, Sparkles, ArrowRight } from "lucide-react";
+import { PackageCheck, ShoppingBasket, Heart, Sparkles, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { SafeImage } from "@/components/ui/SafeImage";
 
 export const dynamic = "force-dynamic";
 
@@ -105,9 +105,12 @@ export default async function CustomerDashboard() {
             <Link key={p.id} href={`/products/${p.id}`}
               className="group block overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift">
               <div className="relative aspect-square overflow-hidden">
-                <Image
-                  src={p.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=500&q=80"}
-                  alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110"
+                <SafeImage
+                  src={p.imageUrl}
+                  alt={p.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  fallbackLabel={p.name}
                 />
               </div>
               <div className="p-3">

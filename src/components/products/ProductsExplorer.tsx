@@ -1,11 +1,11 @@
 "use client";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency } from "@/lib/utils";
 
 export function ProductsExplorer({ products, categories }: { products: any[]; categories: any[] }) {
@@ -101,9 +101,13 @@ export function ProductsExplorer({ products, categories }: { products: any[]; ca
                     <Link href={`/products/${p.id}`}
                       className="group block rounded-2xl border border-cream-200 bg-white p-3 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift">
                       <div className="relative aspect-square overflow-hidden rounded-xl">
-                        <Image
-                          src={p.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=500&q=80"}
-                          alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        <SafeImage
+                          src={p.imageUrl}
+                          alt={p.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          fallbackEmoji={p.category.icon || "🌿"}
+                          fallbackLabel={p.name}
                         />
                         {p.stock < 10 && p.stock > 0 && (
                           <span className="absolute left-2 top-2 rounded-full bg-terracotta-500 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-cream-50">

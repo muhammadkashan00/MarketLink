@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Sparkles } from "lucide-react";
 
 export async function FeaturedProducts() {
@@ -42,11 +42,12 @@ export async function FeaturedProducts() {
           {items.map((p) => (
             <Link key={p.id} href={`/products/${p.id}`} className="group block rounded-2xl bg-white p-4 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift">
               <div className="relative aspect-[5/4] overflow-hidden rounded-xl">
-                <Image
-                  src={p.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&q=80"}
+                <SafeImage
+                  src={p.imageUrl}
                   alt={p.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  fallbackLabel={p.name}
                 />
               </div>
               <div className="mt-4 flex items-start justify-between gap-2">

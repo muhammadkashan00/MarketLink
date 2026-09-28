@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { StarRating } from "@/components/ui/StarRating";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency, timeAgo } from "@/lib/utils";
-import { PackageCheck, Package, TrendingUp, Star, ShoppingBasket, ArrowRight } from "lucide-react";
+import { PackageCheck, TrendingUp, Star, ShoppingBasket, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -126,7 +126,7 @@ export default async function FarmerDashboard() {
                 <Card key={p.id} className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg">
-                      <Image src={p.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=200&q=80"} alt={p.name} fill className="object-cover" />
+                      <SafeImage src={p.imageUrl} alt={p.name} fill className="object-cover" fallbackLabel="" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-sm font-semibold text-ink-900">{p.name}</p>

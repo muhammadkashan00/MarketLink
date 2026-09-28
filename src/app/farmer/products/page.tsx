@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { formatCurrency } from "@/lib/utils";
-import { Plus, Package, Eye, EyeOff, AlertTriangle, Pencil } from "lucide-react";
+import { Plus, Package, EyeOff, Pencil } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,7 @@ export default async function FarmerProductsPage() {
           {profile.products.map((p) => (
             <Card key={p.id} className="overflow-hidden">
               <div className="relative aspect-video overflow-hidden">
-                <Image src={p.imageUrl || "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=500&q=80"} alt={p.name} fill className="object-cover" />
+                <SafeImage src={p.imageUrl} alt={p.name} fill className="object-cover" fallbackEmoji={p.category.icon || "🌿"} fallbackLabel={p.name} />
                 {p.stock === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-ink-950/60">
                     <span className="rounded-full bg-terracotta-500 px-3 py-1 text-xs font-bold text-cream-50">OUT OF STOCK</span>
