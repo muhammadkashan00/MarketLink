@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+    --font-fraunces: "Fraunces", Georgia, serif;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #FDF8F0;
+    color: #2A2823;
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: #2D5F3F; color: #FDF8F0; }
+  * { box-sizing: border-box; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-harvest-800 px-6 py-3 text-sm font-semibold text-cream-50 shadow-soft transition-all hover:bg-harvest-900 hover:shadow-lift active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-harvest-800 bg-transparent px-6 py-3 text-sm font-semibold text-harvest-800 transition-all hover:bg-harvest-800 hover:text-cream-50 active:scale-[0.98];
+  }
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-cream-50 shadow-soft transition-all hover:bg-terracotta-600 hover:shadow-lift active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-cream-200/60;
+  }
+  .card {
+    @apply rounded-2xl border border-cream-200 bg-white/70 backdrop-blur-sm shadow-soft transition-shadow;
+  }
+  .card-lift {
+    @apply rounded-2xl border border-cream-200 bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift;
+  }
+  .input {
+    @apply w-full rounded-xl border-2 border-cream-200 bg-white/80 px-4 py-3 text-sm text-ink-900 placeholder-ink-400 shadow-inner-soft transition-all outline-none focus:border-harvest-500 focus:bg-white focus:ring-4 focus:ring-harvest-100;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-600;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .badge-success { @apply badge bg-harvest-100 text-harvest-800; }
+  .badge-warn    { @apply badge bg-cream-200 text-cream-800; }
+  .badge-danger  { @apply badge bg-terracotta-100 text-terracotta-700; }
+  .badge-info    { @apply badge bg-ink-100 text-ink-700; }
+  .glass-panel   { @apply bg-white/70 backdrop-blur-md border border-cream-200; }
+  .serif-heading { font-family: var(--font-fraunces); font-optical-sizing: auto; font-variation-settings: "SOFT" 30, "WONK" 0; letter-spacing: -0.02em; }
+  .skeleton      { @apply bg-gradient-to-r from-cream-100 via-cream-200 to-cream-100 bg-[length:1000px_100%] animate-shimmer rounded-xl; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .text-balance { text-wrap: balance; }
+}
+
+@layer utilities {
+  .bg-noise { position: relative; }
+  .bg-noise::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    z-index: 0;
+  }
+  .hero-blob {
+    filter: blur(80px);
+    opacity: 0.5;
+  }
+}
+
+/* Leaflet fixes */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  border-radius: 1rem;
+  font-family: var(--font-inter);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 4px;
+}
+.leaflet-popup-content { margin: 12px !important; }
+
+/* Toast overrides */
+[data-sonner-toaster] { font-family: var(--font-inter) !important; }

@@ -1,0 +1,337 @@
+// MarketLink — Database Schema
+// PostgreSQL (Neon) via Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ================================================
+// ENUMS
+// ================================================
+
+enum Role {
+  CUSTOMER
+  FARMER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING       // farmer awaiting admin approval
+  ACTIVE
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PLACED
+  ACCEPTED
+  READY
+  COMPLETED
+  CANCELLED
+  DECLINED
+}
+
+enum FavoriteType {
+  FARMER
+  PRODUCT
+}
+
+enum ReviewTarget {
+  FARMER
+  PRODUCT
+}
+
+enum NotificationType {
+  ORDER_PLACED
+  ORDER_ACCEPTED
+  ORDER_READY
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  REVIEW_RECEIVED
+  RESTOCK_ALERT
+  ANNOUNCEMENT
+  ACCOUNT_APPROVED
+  ACCOUNT_SUSPENDED
+}
+
+// ================================================
+// USER + PROFILES
+// ================================================
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  phone        String?
+  address      String?
+  role         Role
+  status       UserStatus @default(ACTIVE)
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  farmerProfile FarmerProfile?
+
+  customerOrders Order[]         @relation("CustomerOrders")
+  reviewsWritten Review[]        @relation("ReviewsWritten")
+  favorites      Favorite[]
+  notifications  Notification[]
+  announcements  Announcement[]  @relation("AnnouncementsBy")
+  reports        Report[]        @relation("ReportsBy")
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+model FarmerProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stallName          String
+  bio                String?
+  bannerUrl          String?
+  operatingDays      String[] // ["MON","WED","SAT"]
+  pickupWindowStart  String   @default("08:00") // "HH:mm"
+  pickupWindowEnd    String   @default("14:00")
+  orderCutoffHours   Int      @default(12)      // hours before pickup
+  latitude           Float?
+  longitude          Float?
+  mapAddress         String?
+  averageRating      Float    @default(0)
+  totalReviews       Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  products     Product[]
+  farmerOrders Order[]           @relation("FarmerOrders")
+  markets      FarmerMarketLink[]
+
+  @@index([stallName])
+}
+
+// ================================================
+// MARKETS
+// ================================================
+
+model Market {
+  id             String   @id @default(cuid())
+  name           String
+  address        String
+  city           String
+  operatingDays  String[]
+  startTime      String   @default("07:00")
+  endTime        String   @default("13:00")
+  latitude       Float
+  longitude      Float
+  imageUrl       String?
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  farmers FarmerMarketLink[]
+  orders  Order[]
+
+  @@index([city])
+  @@index([name])
+}
+
+model FarmerMarketLink {
+  id       String @id @default(cuid())
+  farmerId String
+  farmer   FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  marketId String
+  market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  stallNumber String?
+
+  @@unique([farmerId, marketId])
+  @@index([farmerId])
+  @@index([marketId])
+}
+
+// ================================================
+// PRODUCTS + CATEGORIES
+// ================================================
+
+model Category {
+  id       String @id @default(cuid())
+  name     String @unique
+  slug     String @unique
+  icon     String? // emoji or icon key
+  sortOrder Int   @default(0)
+
+  products Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  farmerId     String
+  farmer       FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id])
+  name         String
+  description  String?
+  price        Decimal  @db.Decimal(10, 2)
+  unit         String   @default("kg") // kg, dozen, bunch, piece
+  stock        Int      @default(0)
+  imageUrl     String?
+  isAvailable  Boolean  @default(true)
+  isSoldOut    Boolean  @default(false)
+  isRecurring  Boolean  @default(false) // part of weekly template
+  averageRating Float   @default(0)
+  totalReviews  Int     @default(0)
+  totalSold     Int     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([farmerId])
+  @@index([categoryId])
+  @@index([isAvailable])
+  @@index([name])
+}
+
+// ================================================
+// ORDERS
+// ================================================
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique @default(cuid())
+  customerId   String
+  customer     User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  farmerId     String
+  farmer       FarmerProfile @relation("FarmerOrders", fields: [farmerId], references: [id])
+  marketId     String?
+  market       Market?     @relation(fields: [marketId], references: [id])
+  status       OrderStatus @default(PLACED)
+  pickupDate   DateTime
+  pickupSlot   String      // "09:00-10:00"
+  notes        String?
+  totalAmount  Decimal     @db.Decimal(10, 2)
+  cancelReason String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items OrderItem[]
+
+  @@index([customerId])
+  @@index([farmerId])
+  @@index([status])
+  @@index([pickupDate])
+}
+
+model OrderItem {
+  id              String  @id @default(cuid())
+  orderId         String
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product @relation(fields: [productId], references: [id])
+  productName     String  // snapshot at purchase time
+  quantity        Int
+  priceAtPurchase Decimal @db.Decimal(10, 2)
+  subtotal        Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ================================================
+// REVIEWS
+// ================================================
+
+model Review {
+  id             String       @id @default(cuid())
+  customerId     String
+  customer       User         @relation("ReviewsWritten", fields: [customerId], references: [id])
+  targetType     ReviewTarget
+  targetId       String       // farmer.id OR product.id
+  rating         Int          // 1-5
+  comment        String
+  farmerResponse String?
+  respondedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([targetType, targetId])
+  @@index([customerId])
+}
+
+// ================================================
+// FAVORITES
+// ================================================
+
+model Favorite {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetType FavoriteType
+  targetId   String
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId])
+}
+
+// ================================================
+// NOTIFICATIONS
+// ================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// ================================================
+// ADMIN
+// ================================================
+
+model Announcement {
+  id        String   @id @default(cuid())
+  createdBy String
+  admin     User     @relation("AnnouncementsBy", fields: [createdBy], references: [id])
+  title     String
+  body      String
+  audience  String   @default("ALL") // ALL, CUSTOMERS, FARMERS
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([audience])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  generatedBy String
+  admin       User     @relation("ReportsBy", fields: [generatedBy], references: [id])
+  reportType  String
+  data        Json
+  generatedAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  target    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
