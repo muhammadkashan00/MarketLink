@@ -3,43 +3,63 @@ import { useSyncExternalStore } from "react";
 import type { CartItem } from "@/types";
 
 const KEY = "marketlink_cart";
-
 type CartState = { items: CartItem[] };
+const EMPTY: CartState = { items: [] };
+
+// useSyncExternalStore requires getSnapshot to return a STABLE reference when
+// the underlying data hasn't changed — otherwise React re-renders infinitely.
+// We cache the parsed snapshot and only invalidate when the raw string changes.
+let cachedRaw: string | null = null;
+let cachedSnapshot: CartState = EMPTY;
 
 function readCart(): CartState {
-  if (typeof window === "undefined") return { items: [] };
+  if (typeof window === "undefined") return EMPTY;
+  const raw = localStorage.getItem(KEY);
+  if (raw === cachedRaw) return cachedSnapshot;
+  cachedRaw = raw;
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return { items: [] };
-    return JSON.parse(raw);
+    cachedSnapshot = raw ? JSON.parse(raw) : EMPTY;
   } catch {
-    return { items: [] };
+    cachedSnapshot = EMPTY;
   }
+  return cachedSnapshot;
 }
 
 function writeCart(state: CartState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(state));
+  const raw = JSON.stringify(state);
+  localStorage.setItem(KEY, raw);
+  cachedRaw = raw;
+  cachedSnapshot = state;
   window.dispatchEvent(new Event("cart-change"));
 }
 
 const listeners = new Set<() => void>();
 if (typeof window !== "undefined") {
-  window.addEventListener("cart-change", () => listeners.forEach((l) => l()));
-  window.addEventListener("storage", (e) => e.key === KEY && listeners.forEach((l) => l()));
+  window.addEventListener("cart-change", () => {
+    listeners.forEach((l) => l());
+  });
+  window.addEventListener("storage", (e) => {
+    if (e.key === KEY) {
+      cachedRaw = null;
+      listeners.forEach((l) => l());
+    }
+  });
 }
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
-  return () => listeners.delete(cb);
+  return () => {
+    listeners.delete(cb);
+  };
 }
 
-function getSnapshot() {
+function getSnapshot(): CartState {
   return readCart();
 }
 
-function getServerSnapshot() {
-  return { items: [] as CartItem[] };
+function getServerSnapshot(): CartState {
+  return EMPTY;
 }
 
 export function useCart() {
@@ -51,8 +71,7 @@ export function useCart() {
     farmerId: state.items[0]?.farmerId,
     farmerName: state.items[0]?.farmerName,
     add(item: CartItem) {
-      const cur = readCart();
-      // Enforce: cart limited to one farmer at a time
+      const cur = { items: [...readCart().items] };
       if (cur.items.length > 0 && cur.items[0].farmerId !== item.farmerId) {
         if (!confirm(`Your basket has items from ${cur.items[0].farmerName}. Clear it and add from ${item.farmerName}?`)) return;
         cur.items = [];
@@ -66,7 +85,7 @@ export function useCart() {
       writeCart(cur);
     },
     update(productId: string, quantity: number) {
-      const cur = readCart();
+      const cur = { items: [...readCart().items] };
       const item = cur.items.find((i) => i.productId === productId);
       if (item) {
         if (quantity <= 0) cur.items = cur.items.filter((i) => i.productId !== productId);
@@ -75,8 +94,7 @@ export function useCart() {
       }
     },
     remove(productId: string) {
-      const cur = readCart();
-      cur.items = cur.items.filter((i) => i.productId !== productId);
+      const cur = { items: readCart().items.filter((i) => i.productId !== productId) };
       writeCart(cur);
     },
     clear() {

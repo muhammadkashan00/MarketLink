@@ -146,21 +146,23 @@ export function HeroSection() {
               </div>
             </motion.div>
 
-            {/* Rotating badge */}
+            {/* Rotating badge — cream ring + drop shadow so it pops off the image */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-6 -right-6 hidden md:block"
+              className="absolute -top-8 -right-8 hidden md:block"
+              style={{ filter: "drop-shadow(0 10px 20px rgba(45, 95, 63, 0.35))" }}
             >
-              <svg viewBox="0 0 100 100" className="h-24 w-24">
+              <svg viewBox="0 0 100 100" className="h-28 w-28">
                 <defs>
-                  <path id="circle" d="M50,50 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0" />
+                  <path id="circle" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
                 </defs>
-                <circle cx="50" cy="50" r="46" fill="#2D5F3F" />
-                <text fontSize="10" fill="#FDF8F0" fontWeight="600" letterSpacing="2">
+                <circle cx="50" cy="50" r="49" fill="#FDF8F0" />
+                <circle cx="50" cy="50" r="45" fill="#2D5F3F" />
+                <text fontSize="9.5" fill="#FDF8F0" fontWeight="700" letterSpacing="2.2">
                   <textPath href="#circle">FARM FRESH · SEASONAL · LOCAL · </textPath>
                 </text>
-                <text x="50" y="55" textAnchor="middle" fontSize="20" fill="#FDF8F0">🌿</text>
+                <text x="50" y="56" textAnchor="middle" fontSize="20" fill="#FDF8F0">🌿</text>
               </svg>
             </motion.div>
           </motion.div>
