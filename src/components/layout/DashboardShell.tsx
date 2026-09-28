@@ -6,16 +6,24 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { cn, initials } from "@/lib/utils";
-import { LogOut, Menu, X, Bell, ChevronDown } from "lucide-react";
+import {
+  LogOut, Menu, X, Bell, Home, ShoppingBasket, PackageCheck, Heart, User, MessagesSquare,
+  MapPin, Package, MessageSquare, Store, BarChart3, Sprout, Users, Tag, Megaphone,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-type NavLink = { href: string; label: string; icon: LucideIcon; badge?: number };
+const ICON_MAP: Record<string, LucideIcon> = {
+  Home, ShoppingBasket, PackageCheck, Heart, User, MessagesSquare, MapPin, Package,
+  MessageSquare, Store, BarChart3, Bell, Sprout, Users, Tag, Megaphone,
+};
+
+export type NavLinkConfig = { href: string; label: string; icon: string; badge?: number };
 
 export function DashboardShell({
   user, navLinks, sectionTitle, children, notifications = 0,
 }: {
   user: { name: string; email: string; role: string };
-  navLinks: NavLink[];
+  navLinks: NavLinkConfig[];
   sectionTitle: string;
   children: React.ReactNode;
   notifications?: number;
@@ -23,7 +31,6 @@ export function DashboardShell({
   const path = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -34,7 +41,6 @@ export function DashboardShell({
 
   return (
     <div className="flex min-h-screen bg-cream-100">
-      {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-40 w-72 border-r border-cream-200 bg-white transition-transform lg:translate-x-0 lg:static",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -50,6 +56,7 @@ export function DashboardShell({
           <nav className="space-y-1">
             {navLinks.map((l) => {
               const active = path === l.href || (l.href !== "/" && path.startsWith(l.href + "/"));
+              const Icon = ICON_MAP[l.icon] || Home;
               return (
                 <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)}
                   className={cn(
@@ -59,7 +66,7 @@ export function DashboardShell({
                   {active && (
                     <motion.span layoutId="dash-active" className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-harvest-800" />
                   )}
-                  <l.icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" />
                   <span className="flex-1">{l.label}</span>
                   {l.badge ? (
                     <span className="rounded-full bg-terracotta-500 px-2 py-0.5 text-[10px] font-bold text-cream-50">{l.badge}</span>
