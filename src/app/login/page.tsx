@@ -42,11 +42,13 @@ function LoginForm() {
       <h1 className="serif-heading text-center text-3xl text-ink-900">Welcome back</h1>
       <p className="mt-2 text-center text-sm text-ink-600">Sign in to your MarketLink account</p>
 
-      <form onSubmit={submit} className="mt-8 space-y-4">
-        <Input label="Email" name="email" type="email" required leftIcon={<Mail className="h-4 w-4" />}
+      <form onSubmit={submit} className="mt-8 space-y-4" autoComplete="off">
+        <Input label="Email" name="marketlink-email" type="email" required autoComplete="off"
+          leftIcon={<Mail className="h-4 w-4" />}
           placeholder="you@example.com" value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <Input label="Password" name="password" type="password" required leftIcon={<Lock className="h-4 w-4" />}
+        <Input label="Password" name="marketlink-password" type="password" required autoComplete="new-password"
+          leftIcon={<Lock className="h-4 w-4" />}
           placeholder="••••••••" value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })} />
         {err && <p className="rounded-xl bg-terracotta-100 px-3 py-2 text-xs text-terracotta-800">{err}</p>}
@@ -59,15 +61,6 @@ function LoginForm() {
         New to MarketLink?{" "}
         <Link href="/register" className="font-semibold text-harvest-800 hover:underline">Create an account</Link>
       </p>
-
-      <div className="mt-6 rounded-xl border border-dashed border-cream-300 bg-cream-50 p-3">
-        <p className="text-center text-xs font-semibold uppercase tracking-wider text-ink-500">Try test accounts</p>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-ink-600">
-          <button type="button" onClick={() => setForm({ email: "customer@marketlink.com", password: "Customer@123" })} className="rounded-lg bg-white px-2 py-1 shadow-soft hover:bg-harvest-50">Customer</button>
-          <button type="button" onClick={() => setForm({ email: "farmer@marketlink.com", password: "Farmer@123" })} className="rounded-lg bg-white px-2 py-1 shadow-soft hover:bg-harvest-50">Farmer</button>
-          <button type="button" onClick={() => setForm({ email: "admin@marketlink.com", password: "Admin@12345" })} className="rounded-lg bg-white px-2 py-1 shadow-soft hover:bg-harvest-50">Admin</button>
-        </div>
-      </div>
     </motion.div>
   );
 }
